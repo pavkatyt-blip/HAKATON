@@ -1,0 +1,36 @@
+services:
+  go-app:
+    build: ./go-app
+    ports:
+      - "8080:8080"
+    environment:
+      APP_PORT: "8080"
+      PYTHON_URL: "http://python-app:8000/anonymize"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  python-app:
+    build: ./python-app
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  frontend-app:
+    build:
+      context: ./frontend-app
+      args:
+        VITE_API_URL: "http://localhost:8080"
+    ports:
+      - "9091:80"
+    networks:
+      - app-network
+    depends_on:
+      - go-app
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
